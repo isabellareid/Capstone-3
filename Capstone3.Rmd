@@ -220,13 +220,13 @@ binwidth_value <- 0.5
 
 # Histogram for red wine alcohol content (after cleaning data)
 ggplot(redwine_clean, aes(x = Alcohol)) +
-  geom_histogram(binwidth = binwidth_value, fill = "red", color = "black") +
+  geom_histogram(binwidth = binwidth_value, fill = "#FF6961", color = "black") +
   theme_minimal() +
   labs(title = "Histogram of Alcohol Content for Red Wine", x = "Alcohol Content", y = "Frequency")
 
 # Histogram for white wine alcohol content (after cleaning data)
 ggplot(whitewine_clean, aes(x = Alcohol)) +
-  geom_histogram(binwidth = binwidth_value, fill = "blue", color = "black") +
+  geom_histogram(binwidth = binwidth_value, fill = "#AEC6CF", color = "black") +
   theme_minimal() +
   labs(title = "Histogram of Alcohol Content for White Wine", x = "Alcohol Content", y = "Frequency")
 ```
@@ -245,7 +245,7 @@ wine_combined <- rbind(redwine_clean, whitewine_clean)
 # Boxplot of Alcohol Content by Wine Type
 ggplot(wine_combined, aes(x = Type, y = Alcohol, fill = Type)) +
   geom_boxplot(color = "black") +
-  scale_fill_manual(values = c("Red" = "red", "White" = "blue")) +
+  scale_fill_manual(values = c("Red" = "#FF6961", "White" = "#AEC6CF")) +
   theme_minimal() +
   labs(title = "Boxplot of Alcohol Content by Wine Type", x = "Wine Type", y = "Alcohol Content") +
   theme(legend.position = "none")
