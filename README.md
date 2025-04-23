@@ -998,173 +998,156 @@ white wines than in red wines when it comes to perceived quality.
 ## Correlation Tests
 
 ``` r
-# Perform the correlation test again after cleaning the data
-cor_test_red <- cor.test(redwine_clean$Alcohol, redwine_clean$Quality)
-cor_test_white <- cor.test(whitewine_clean$Alcohol, whitewine_clean$Quality)
-
-# Print the results of the correlation tests
-print(cor_test_red)
+# Print the table using kable for a clean output
+kable(cor_results, format = "html", caption = "Correlation Test Results for Red and White Wine", align = "lcccccc") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
-    ## 
-    ##  Pearson's product-moment correlation
-    ## 
-    ## data:  redwine_clean$Alcohol and redwine_clean$Quality
-    ## t = 21.639, df = 1597, p-value < 2.2e-16
-    ## alternative hypothesis: true correlation is not equal to 0
-    ## 95 percent confidence interval:
-    ##  0.4373540 0.5132081
-    ## sample estimates:
-    ##       cor 
-    ## 0.4761663
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<caption>
+Correlation Test Results for Red and White Wine
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Test
+</th>
+<th style="text-align:center;">
+Correlation_Coefficient
+</th>
+<th style="text-align:center;">
+P_Value
+</th>
+<th style="text-align:center;">
+Lower_Confidence_Interval
+</th>
+<th style="text-align:center;">
+Upper_Confidence_Interval
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Red Wine: Alcohol vs Quality
+</td>
+<td style="text-align:center;">
+0.4761663
+</td>
+<td style="text-align:center;">
+0.0000000
+</td>
+<td style="text-align:center;">
+0.4373540
+</td>
+<td style="text-align:center;">
+0.5132081
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+White Wine: Alcohol vs Quality
+</td>
+<td style="text-align:center;">
+0.4355747
+</td>
+<td style="text-align:center;">
+0.0000000
+</td>
+<td style="text-align:center;">
+0.4126015
+</td>
+<td style="text-align:center;">
+0.4579941
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Red Wine: pH vs Quality
+</td>
+<td style="text-align:center;">
+-0.0577314
+</td>
+<td style="text-align:center;">
+0.0209628
+</td>
+<td style="text-align:center;">
+-0.1064513
+</td>
+<td style="text-align:center;">
+-0.0087350
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+White Wine: pH vs Quality
+</td>
+<td style="text-align:center;">
+0.0994272
+</td>
+<td style="text-align:center;">
+0.0000000
+</td>
+<td style="text-align:center;">
+0.0716202
+</td>
+<td style="text-align:center;">
+0.1270798
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Red Wine: Residual Sugar vs Quality
+</td>
+<td style="text-align:center;">
+0.0137316
+</td>
+<td style="text-align:center;">
+0.5832180
+</td>
+<td style="text-align:center;">
+-0.0353133
+</td>
+<td style="text-align:center;">
+0.0627106
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+White Wine: Residual Sugar vs Quality
+</td>
+<td style="text-align:center;">
+-0.0975768
+</td>
+<td style="text-align:center;">
+0.0000000
+</td>
+<td style="text-align:center;">
+-0.1252410
+</td>
+<td style="text-align:center;">
+-0.0697610
+</td>
+</tr>
+</tbody>
+</table>
 
-``` r
-print(cor_test_white)
-```
+Summary of Key Findings:
 
-    ## 
-    ##  Pearson's product-moment correlation
-    ## 
-    ## data:  whitewine_clean$Alcohol and whitewine_clean$Quality
-    ## t = 33.858, df = 4896, p-value < 2.2e-16
-    ## alternative hypothesis: true correlation is not equal to 0
-    ## 95 percent confidence interval:
-    ##  0.4126015 0.4579941
-    ## sample estimates:
-    ##       cor 
-    ## 0.4355747
+Alcohol has a moderate positive correlation with quality for both red
+and white wines, with statistically significant p-values.
 
-The correlation between Alcohol and Quality for red wine is 0.4762. This
-indicates a moderate positive linear relationship between alcohol
-content and quality rating. As the alcohol content increases, the
-quality rating tends to increase as well. The correlation between
-Alcohol and Quality for white wine is 0.4356, indicating a moderate
-positive linear relationship between alcohol content and quality,
-similar to red wine (although red wine correlation is slightly
-stronger). The p-values for both tests are very small, confirming that
-the observed correlations are unlikely to be due to random chance. In
-both cases, alcohol content appears to be positively associated with the
-quality of the wine, meaning that higher alcohol content generally
-correlates with higher quality ratings. The strength of the correlation
-is moderate for both red and white wines, meaning that while alcohol
-content does influence quality, it is not the only factor. Other factors
-such as acidity, residual sugar, and possibly fermentation process may
-also contribute significantly to wine quality. The very low p-values
-(less than 0.05) indicate that these correlations are statistically
-significant, meaning it is highly unlikely that these correlations are
-due to random chance.
+pH has a weak negative correlation with quality in red wine, and a small
+positive correlation in white wine, both statistically significant but
+weak in magnitude.
 
-``` r
-# Correlation test between pH and Quality for red wine
-cor_test_ph_red <- cor.test(redwine$pH, redwine$Quality)
-print(cor_test_ph_red)
-```
+Residual Sugar shows no significant correlation with quality in red
+wine, but a weak negative correlation with quality in white wine, which
+is statistically significant.
 
-    ## 
-    ##  Pearson's product-moment correlation
-    ## 
-    ## data:  redwine$pH and redwine$Quality
-    ## t = -2.3109, df = 1597, p-value = 0.02096
-    ## alternative hypothesis: true correlation is not equal to 0
-    ## 95 percent confidence interval:
-    ##  -0.106451268 -0.008734972
-    ## sample estimates:
-    ##         cor 
-    ## -0.05773139
-
-``` r
-# Correlation test between pH and Quality for white wine
-cor_test_ph_white <- cor.test(whitewine$pH, whitewine$Quality)
-print(cor_test_ph_white)
-```
-
-    ## 
-    ##  Pearson's product-moment correlation
-    ## 
-    ## data:  whitewine$pH and whitewine$Quality
-    ## t = 6.9917, df = 4896, p-value = 3.081e-12
-    ## alternative hypothesis: true correlation is not equal to 0
-    ## 95 percent confidence interval:
-    ##  0.07162022 0.12707983
-    ## sample estimates:
-    ##        cor 
-    ## 0.09942725
-
-The Pearson correlation tests between pH and wine quality reveal weak
-but statistically significant relationships for both red and white
-wines. For red wine, the correlation coefficient is approximately
--0.058, indicating a very slight negative relationship between pH levels
-(acidity) and quality. This suggests that as red wine becomes slightly
-more acidic (lower pH), its quality rating may slightly increase,
-although the effect is minimal. The p-value of 0.021 supports the
-rejection of the null hypothesis that there is no correlation. In
-contrast, the white wine results show a weak positive correlation, with
-a coefficient of approximately 0.099. This implies that higher pH values
-(less acidity) are modestly associated with higher quality scores in
-white wine. The very small p-value (3.08e-12) indicates that this
-correlation is statistically significant. Although the correlation is
-statistically significant, the magnitude of the correlation is weak,
-suggesting a very slight positive relationship between pH and wine
-quality. As pH increases, quality tends to slightly improve, but the
-effect is small.
-
-``` r
-# Remove rows with NA in either column for both datasets
-redwine_clean <- redwine[!is.na(redwine$`Residual Sugar`) & !is.na(redwine$Quality), ]
-whitewine_clean <- whitewine[!is.na(whitewine$`Residual Sugar`) & !is.na(whitewine$Quality), ]
-
-# Perform the correlation test again after cleaning the data
-cor_test_red <- cor.test(redwine_clean$`Residual Sugar`, redwine_clean$Quality)
-print(cor_test_red)
-```
-
-    ## 
-    ##  Pearson's product-moment correlation
-    ## 
-    ## data:  redwine_clean$`Residual Sugar` and redwine_clean$Quality
-    ## t = 0.5488, df = 1597, p-value = 0.5832
-    ## alternative hypothesis: true correlation is not equal to 0
-    ## 95 percent confidence interval:
-    ##  -0.03531327  0.06271056
-    ## sample estimates:
-    ##        cor 
-    ## 0.01373164
-
-``` r
-cor_test_white <- cor.test(whitewine_clean$`Residual Sugar`, whitewine_clean$Quality)
-print(cor_test_white)
-```
-
-    ## 
-    ##  Pearson's product-moment correlation
-    ## 
-    ## data:  whitewine_clean$`Residual Sugar` and whitewine_clean$Quality
-    ## t = -6.8603, df = 4896, p-value = 7.724e-12
-    ## alternative hypothesis: true correlation is not equal to 0
-    ## 95 percent confidence interval:
-    ##  -0.12524103 -0.06976101
-    ## sample estimates:
-    ##         cor 
-    ## -0.09757683
-
-The Pearson correlation coefficient between residual sugar and wine
-quality for red wine is 0.0137, which is very close to 0. This suggests
-there is virtually no linear relationship between residual sugar and the
-quality of red wine. The p-value is 0.5832, which is much greater than
-0.05. This means that the correlation is not statistically significant.
-In other words, there is no strong evidence to suggest that the amount
-of residual sugar in red wine has an impact on its quality. The Pearson
-correlation coefficient for residual sugar and wine quality in white
-wine is -0.0976, indicating a very weak negative correlation. This
-suggests that as the residual sugar increases in white wine, the quality
-tends to decrease very slightly, but the relationship is weak. The
-correlation is negative, indicating that higher residual sugar might be
-associated with lower quality, but the strength of this relationship is
-minimal. The p-value is 7.724e-12, which is very small and much less
-than 0.05. This means the negative correlation is statistically
-significant, although weak. There is strong evidence that some degree of
-negative correlation exists between residual sugar and the quality of
-white wine.
+These results suggest that alcohol content tends to have a positive
+impact on wine quality, while pH and residual sugar have weaker, more
+variable effects depending on the type of wine.
 
 ``` r
 ## Hypothesis Test
@@ -1188,15 +1171,19 @@ print(t_test_alcohol)
 This is a Welch Two-Sample t-test. This version of the t-test is used
 when the two samples (red wine and white wine alcohol contents) have
 unequal variances or unequal sample sizes, which is more robust than the
-standard t-test under these conditions. Null Hypothesis (H₀): The mean
-alcohol content of red wine is equal to the mean alcohol content of
-white wine. Alternative Hypothesis (H₁): The mean alcohol content of red
-wine is not equal to the mean alcohol content of white wine. The results
-indicate that there is a statistically significant difference in the
-alcohol content between red and white wines. Specifically, white wines
-have a slightly higher average alcohol content than red wines. The
-difference is significant, as indicated by the p-value of 0.004278,
-which is less than the usual significance level of 0.05.
+standard t-test under these conditions.
+
+Null Hypothesis (H₀): The mean alcohol content of red wine is equal to
+the mean alcohol content of white wine.
+
+Alternative Hypothesis (H₁): The mean alcohol content of red wine is not
+equal to the mean alcohol content of white wine.
+
+Results: There is a statistically significant difference in the alcohol
+content between red and white wines. Specifically, white wines have a
+slightly higher average alcohol content than red wines. The difference
+is significant, as indicated by the p-value of 0.004278, which is less
+than the usual significance level of 0.05.
 
 ## Assumption Tests
 
@@ -1242,18 +1229,21 @@ for normality shows highly significant results (p-value \< 2.2e-16),
 indicating that both red and white wine alcohol content are not normally
 distributed. The Shapiro-Wilk test assesses whether the data follows a
 normal distribution, and the very small p-value suggests strong evidence
-against normality. The Levene’s test for homogeneity of variance, which
-tests whether the variances of alcohol content in red and white wines
-are equal, yields a significant result (p-value \< 2.2e-16). This means
-that the assumption of equal variances between the two groups (red wine
-and white wine alcohol content) is violated, and the variances are
-significantly different. Given the significant results from both tests,
-the data does not meet the assumptions of normality and homogeneity of
-variance. This is why the Welch t-test was used, as it does not require
-these assumptions to be met and is more robust when dealing with unequal
-variances or non-normal distributions. Despite the violations of these
-assumptions, the Welch t-test still provides reliable results in this
-case.
+against normality.
+
+The Levene’s test for homogeneity of variance, which tests whether the
+variances of alcohol content in red and white wines are equal, yields a
+significant result (p-value \< 2.2e-16). This means that the assumption
+of equal variances between the two groups (red wine and white wine
+alcohol content) is violated, and the variances are significantly
+different.
+
+Given the significant results from both tests, the data does not meet
+the assumptions of normality and homogeneity of variance. This is why
+the Welch t-test was used, as it does not require these assumptions to
+be met and is more robust when dealing with unequal variances or
+non-normal distributions. Despite the violations of these assumptions,
+the Welch t-test still provides reliable results in this case.
 
 ``` r
 # Shapiro-Wilk normality test for Residual Sugar
@@ -1278,32 +1268,29 @@ kable(assumption_results, digits = 5, caption = "Combined Assumption Test Result
 
 Combined Assumption Test Results for pH and Residual Sugar by Wine Type
 
-For the Shapiro-Wilk Normality test, the p-value is significantly less
-than 0.05, indicating that the distribution of pH for red wine does not
-follow a normal distribution. The null hypothesis of normality is
-rejected. Similarly, the p-value for white wine is extremely small,
-leading to the rejection of the null hypothesis of normality. The pH
-distribution for white wine also does not follow a normal distribution.
-Shapiro-Wilk normality test shows that both red wine and white wine
-residual sugar values do not follow a normal distribution.
+1.  Shapiro-Wilk Test for Normality:
 
-For Levene’s Test, the p-value is much greater than 0.05, indicating
-that there is no significant difference in variance across the different
-quality groups for red wine pH. Therefore, the assumption of homogeneity
-of variances holds for red wine. For white wine, the p-value is
-extremely small, meaning that the assumption of homogeneity of variances
-is violated for white wine pH across different quality groups. This
-suggests that the variability in pH values is significantly different
-between the quality groups for white wine. Levene’s test indicates that
-the variance in residual sugar is homogeneous across different quality
-groups for red wine, meaning the variability in residual sugar is
-similar across quality categories. In white wine, the test shows that
-the assumption of homogeneity of variances is violated for white wine
-residual sugar. This means the variability in residual sugar is not
-consistent across quality groups.
+The Shapiro-Wilk test assesses whether the data follows a normal
+distribution. A p-value less than 0.05 indicates that the variable does
+not follow a normal distribution, while a p-value greater than 0.05
+suggests the variable may follow a normal distribution.
 
-Homogeneity is met for red wine for Levene’s Test for pH and Residual
-Sugar, but not met in any other category.
+All of the variables (pH and residual sugar for both red and white wine)
+fail the normality test (p-value \< 0.05), suggesting that none of these
+variables are normally distributed in either type of wine.
+
+2.  Levene’s Test for Homogeneity of Variance:
+
+Levene’s test assesses whether the variances between two or more groups
+are equal. A p-value greater than 0.05 indicates that the variances
+between the groups are equal (the assumption of homogeneity of variance
+is met). A p-value less than 0.05 suggests unequal variances.
+
+For red wine, the assumption of equal variances holds for both pH and
+residual sugar (p-value \> 0.05).
+
+For white wine, the assumption of equal variances is violated for both
+pH and residual sugar (p-value \< 0.05).
 
 ``` r
 # Create a dataframe with the Spearman correlation results
