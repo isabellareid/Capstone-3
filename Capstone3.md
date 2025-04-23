@@ -869,8 +869,6 @@ dataset, meaning that some of the red wines have very high alcohol
 content. There is a wider range of alcohol content in white wine than
 there is in red wine.
 
-## Scatterplots
-
 ``` r
 # Make Quality a factor for clearer x-axis grouping
 redwine_clean$Quality <- as.factor(redwine_clean$Quality)
@@ -878,7 +876,6 @@ whitewine_clean$Quality <- as.factor(whitewine_clean$Quality)
 
 # Red Wine: Jitter plot for Alcohol vs. Quality
 ggplot(redwine_clean, aes(x = Quality, y = Alcohol)) +
-  geom_jitter(width = 0.2, alpha = 0.5, color = "red") +
   geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "red") +
   theme_minimal() +
   labs(title = "Red Wine: Alcohol Content by Quality", x = "Quality Score", y = "Alcohol Content")
@@ -889,7 +886,6 @@ ggplot(redwine_clean, aes(x = Quality, y = Alcohol)) +
 ``` r
 # White Wine: Jitter plot for Alcohol vs. Quality
 ggplot(whitewine_clean, aes(x = Quality, y = Alcohol)) +
-  geom_jitter(width = 0.2, alpha = 0.5, color = "blue") +
   geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "blue") +
   theme_minimal() +
   labs(title = "White Wine: Alcohol Content by Quality", x = "Quality Score", y = "Alcohol Content")
@@ -897,27 +893,21 @@ ggplot(whitewine_clean, aes(x = Quality, y = Alcohol)) +
 
 ![](Capstone3_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
 
-Based on the scatterplots overlaid with boxplots for alcohol content by
-quality score, we can observe clear patterns in how alcohol levels
-relate to wine quality for both red and white wines. In both plots,
-there is a general positive association between alcohol content and
-quality score—higher-quality wines tend to have slightly higher alcohol
-levels on average. This trend is more pronounced in white wines, where
-the spread of alcohol content increases steadily with quality, and the
-median alcohol level is noticeably higher in quality scores of 7 and
-above. In red wines, the relationship is also evident but more subtle,
-with some overlap in alcohol levels across quality scores. The inclusion
-of jittered points adds granularity, revealing that lower-quality wines
-(scores 3–5) cluster more tightly around lower alcohol content. These
-visualizations suggest that alcohol content may be a contributing factor
-in perceived wine quality, especially for white wines, and could warrant
-further statistical testing to assess the strength and significance of
-this relationship.
+In both plots, there is a general positive association between alcohol
+content and quality score—higher-quality wines tend to have slightly
+higher alcohol levels on average. This trend is more pronounced in white
+wines, where the spread of alcohol content increases steadily with
+quality, and the median alcohol level is noticeably higher in quality
+scores of 7 and above. In red wines, the relationship is also evident
+but more subtle, with some overlap in alcohol levels across quality
+scores. These visualizations suggest that alcohol content may be a
+contributing factor in perceived wine quality, especially for white
+wines, and could warrant further statistical testing to assess the
+strength and significance of this relationship.
 
 ``` r
 # Scatterplot for Red Wine: pH vs Quality
 ggplot(redwine_clean, aes(x = Quality, y = pH)) +
-  geom_jitter(width = 0.2, alpha = 0.5, color = "red") +
   geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "red") +
   theme_minimal() +
   labs(title = "Red Wine: Acidity Level (pH) by Quality", x = "Quality Score", y = "pH (Acidity Level)")
@@ -928,7 +918,6 @@ ggplot(redwine_clean, aes(x = Quality, y = pH)) +
 ``` r
 # Scatterplot for White Wine: pH vs Quality
 ggplot(whitewine_clean, aes(x = Quality, y = pH)) +
-  geom_jitter(width = 0.2, alpha = 0.5, color = "blue") +
   geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "blue") +
   theme_minimal() +
   labs(title = "White Wine: Acidity Level (pH) by Quality", x = "Quality Score", y = "pH (Acidity Level)")
@@ -936,7 +925,7 @@ ggplot(whitewine_clean, aes(x = Quality, y = pH)) +
 
 ![](Capstone3_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
 
-The scatterplots of acidity level (pH) by quality for both red and white
+The boxplots of acidity level (pH) by quality for both red and white
 wines reveal only modest differences in acidity across varying quality
 scores. For red wine, the pH values generally cluster around 3.2 to 3.4,
 regardless of quality, suggesting that acidity does not vary drastically
@@ -956,7 +945,6 @@ this dataset.
 redwine$Quality <- as.factor(redwine$Quality)
 
 ggplot(redwine, aes(x = Quality, y = `Residual Sugar`)) +
-  geom_jitter(width = 0.2, alpha = 0.5, color = "red") +
   geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "red") +
   theme_minimal() +
   labs(title = "Red Wine: Residual Sugar by Quality",
@@ -971,7 +959,6 @@ ggplot(redwine, aes(x = Quality, y = `Residual Sugar`)) +
 whitewine$Quality <- as.factor(whitewine$Quality)
 
 ggplot(whitewine, aes(x = Quality, y = `Residual Sugar`)) +
-  geom_jitter(width = 0.2, alpha = 0.5, color = "blue") +
   geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "blue") +
   theme_minimal() +
   labs(title = "White Wine: Residual Sugar by Quality",
@@ -979,21 +966,18 @@ ggplot(whitewine, aes(x = Quality, y = `Residual Sugar`)) +
        y = "Residual Sugar (g/dm³)")
 ```
 
-![](Capstone3_files/figure-gfm/unnamed-chunk-14-2.png)<!-- --> In red
-wine, residual sugar levels appear relatively consistent across quality
-scores, with medians and interquartile ranges remaining narrow and
-similar. There is little variability, and most values cluster closely
-around the lower end of the residual sugar scale, suggesting that
-residual sugar is not a strong differentiator of quality in red wines.
-In contrast, white wine shows greater variability in residual sugar,
-particularly in lower quality categories. While the median values remain
-relatively low, the spread of the data increases, and several outliers
-with very high sugar content appear—especially among wines rated with
-lower quality scores. This suggests that for white wines, higher
-residual sugar may sometimes be associated with lower perceived quality,
-although the relationship is not strictly linear. Overall, the
-visualizations indicate that residual sugar plays a more dynamic role in
-white wines than in red wines when it comes to perceived quality.
+![](Capstone3_files/figure-gfm/unnamed-chunk-14-2.png)<!-- -->
+
+In red wine, residual sugar levels appear relatively consistent across
+quality scores, with medians and interquartile ranges remaining narrow
+and similar. While the median values remain relatively low, the spread
+of the data increases, and several outliers with very high sugar content
+appear—especially among wines rated with lower quality scores. This
+suggests that for white wines, higher residual sugar may sometimes be
+associated with lower perceived quality, although the relationship is
+not strictly linear. Overall, the visualizations indicate that residual
+sugar plays a more dynamic role in white wines than in red wines when it
+comes to perceived quality.
 
 ## Correlation Tests
 
