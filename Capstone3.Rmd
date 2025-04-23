@@ -1,0 +1,544 @@
+---
+title: "README"
+output:
+ github_document:
+ pandoc_args: ["--wrap=none"]
+always_allow_html: true
+---
+# Data Understanding 
+
+According to Buckley Fine Wines, there are four indicators of wine quality: complexity, balance, typicity, and intensity and finish.
+
+Complexity: Higher quality wines are more complex in their flavor profile. They often have numerous layers that release flavors over time. 
+
+Balance: Wines that have good balance will be of higher quality than ones where one component stands out above the rest.
+The five components – acidity, tannins, sugar/sweetness, alcohol and fruit – need to be balanced.Higher quality wines don’t necessarily need moderation in each component – indeed, some red wines have higher acidity while others have a higher alcohol content. The dataset contains pH and Residual sugar variables, which contribute to the balance of the overall wine taste and impacts the quality.
+
+Typicity: This is how much the wine looks and tastes the way it should. For example, red Burgundy should have a certain appearance and taste, and it’s this combination that wine connoisseurs look for with each new vintage. This is not really tested in the analysis.
+
+Intensity and Finish: High-quality wines will express intense flavors and a lingering finish, with flavors lasting after you’ve swallowed the wine. Flavors that disappear immediately can indicate that your wine is of moderate quality at best. The better the wine, the longer the flavor finish will last on your palate. Examples of a lingering taste/finish are indicated by alcohol content, which is tested for in the analysis. 
+
+
+## Loading All Necessary Packages 
+```{r}
+library(knitr)
+library(ggplot2)
+library(dplyr)
+library(corrplot)
+library(tidyr)
+library(ggpubr)
+library(stats)
+library(car)
+library(kableExtra)
+```
+
+
+# Loading the Data
+```{r}
+redwine <- read.csv("wine_data/winequality-red.csv", header = TRUE, sep = ";")
+whitewine <- read.csv("wine_data/winequality-white.csv", header = TRUE, sep = ";")
+```
+
+```{r, include = FALSE}
+# Check the column names and structure
+colnames(whitewine)
+str(whitewine)
+
+colnames(redwine)
+str(redwine)
+```
+
+```{r, include = FALSE}
+# For the red wine dataset
+num_samples_red <- nrow(redwine)  # Number of samples (rows)
+num_features_red <- ncol(redwine)  # Number of features (columns)
+
+# For the white wine dataset
+num_samples_white <- nrow(whitewine)  # Number of samples (rows)
+num_features_white <- ncol(whitewine)  # Number of features (columns)
+
+# Display the results
+cat("Red Wine Dataset: \n")
+cat("Number of Samples:", num_samples_red, "\n")
+cat("Number of Features:", num_features_red, "\n\n")
+
+cat("White Wine Dataset: \n")
+cat("Number of Samples:", num_samples_white, "\n")
+cat("Number of Features:", num_features_white, "\n")
+
+# Create a data frame with the results
+dataset_info <- data.frame(
+  Dataset = c("Red Wine", "White Wine"),
+  "Samples" = c(num_samples_red, num_samples_white),
+  "Features" = c(num_features_red, num_features_white)
+)
+
+# Display the table using knitr::kable
+library(knitr)
+```
+
+```{r}
+kable(dataset_info, caption = "Table 1. Number of Samples and Features in the Wine Datasets")
+```
+
+
+```{r, include = FALSE}
+colnames(redwine) <- c(
+  "Fixed Acidity", "Volatile Acidity", "Citric Acid", "Residual Sugar", 
+  "Chlorides", "Free Sulfur Dioxide", "Total Sulfur Dioxide", "Density", 
+  "pH", "Sulphates", "Alcohol", "Quality"
+)
+
+# Feature info table
+feature_info <- data.frame(
+  Feature = colnames(redwine),
+  Description = c(
+    "Non-volatile acids",
+    "Acetic acid",
+    "Adds freshness",
+    "Leftover sugar after fermentation",
+    "Salt content in wine",
+    "SO2 that prevents microbial growth",
+    "Total SO2 (free + bound)",
+    "Mass per unit volume of wine",
+    "Acidity level of the wine",
+    "Contributes to wine stability",
+    "Percentage of alcohol content",
+    "Wine quality score rated from 0–10"
+  ),
+  Scale_Type = c(
+    "Ratio", "Ratio", "Ratio", "Ratio", "Ratio", "Ratio",
+    "Ratio", "Ratio", "Interval", "Ratio", "Ratio", "Ordinal"
+  )
+)
+```
+
+```{r}
+# Display the table nicely
+kable(feature_info, caption = "Table 2. Feature Descriptions for Red and White Wine")
+```
+
+
+```{r, include = FALSE}
+# Rename columns for the white wine dataset
+colnames(whitewine) <- c(
+  "Fixed Acidity", "Volatile Acidity", "Citric Acid", "Residual Sugar", 
+  "Chlorides", "Free Sulfur Dioxide", "Total Sulfur Dioxide", "Density", 
+  "pH", "Sulphates", "Alcohol", "Quality"
+)
+
+# Feature info table for white wine
+feature_info_white <- data.frame(
+  Feature = colnames(whitewine),
+  Description = c(
+    "Non-volatile acids",
+    "Acetic acid",
+    "Adds freshness",
+    "Leftover sugar after fermentation",
+    "Salt content in wine",
+    "SO2 that prevents microbial growth",
+    "Total SO2 (free + bound)",
+    "Mass per unit volume of wine",
+    "Acidity level of the wine",
+    "Contributes to wine stability",
+    "Percentage of alcohol content",
+    "Wine quality score rated from 0–10"
+  ),
+  Scale_Type = c(
+    "Ratio", "Ratio", "Ratio", "Ratio", "Ratio", "Ratio",
+    "Ratio", "Ratio", "Interval", "Ratio", "Ratio", "Ordinal"
+  )
+)
+
+# Display the table nicely for white wine
+kable(feature_info_white, caption = "Table 3. Feature Descriptions for White Wine")
+```
+
+This table displays the features for both the red wine and white wine datasets. Listed are the variables in the dataset, the description for each variable, and the data type. 
+
+# EDA
+
+## Summary Statistics for Red and White Wine
+```{r}
+# Remove any NA or NaN values in the Alcohol column for both datasets
+redwine_clean <- redwine[!is.na(redwine$Alcohol), ]
+whitewine_clean <- whitewine[!is.na(whitewine$Alcohol), ]
+# Function to summarize data with key statistics
+get_summary_stats <- function(data) {
+  data %>%
+    summarise(across(
+      where(is.numeric),
+      list(
+        Count = ~sum(!is.na(.)),
+        Mean = ~mean(., na.rm = TRUE),
+        Median = ~median(., na.rm = TRUE),
+        SD = ~sd(., na.rm = TRUE),
+        Min = ~min(., na.rm = TRUE),
+        Max = ~max(., na.rm = TRUE)
+      ),
+      .names = "{.col}_{.fn}"
+    )) %>%
+    pivot_longer(everything(),
+                 names_to = c("Variable", "Statistic"),
+                 names_sep = "_",
+                 values_to = "Value") %>%
+    pivot_wider(names_from = Statistic, values_from = Value)
+}
+# Red Wine Summary Table
+summary_redwine <- get_summary_stats(redwine_clean)
+
+kable(summary_redwine, caption = "Table 3: Detailed Summary Statistics for Red Wine") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+
+# White Wine Summary Table
+summary_whitewine <- get_summary_stats(whitewine_clean)
+
+kable(summary_whitewine, caption = "Table 4: Detailed Summary Statistics for White Wine") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Histograms 
+```{r}
+# Remove any NA or NaN values in the Alcohol column for both datasets
+redwine_clean <- redwine[!is.na(redwine$Alcohol), ]
+whitewine_clean <- whitewine[!is.na(whitewine$Alcohol), ]
+
+# Remove outliers based on a reasonable range for Alcohol content (if necessary)
+# You can set your own reasonable range based on domain knowledge; for example, alcohol content typically ranges from 8 to 15
+redwine_clean <- redwine_clean[redwine_clean$Alcohol >= 8 & redwine_clean$Alcohol <= 15, ]
+whitewine_clean <- whitewine_clean[whitewine_clean$Alcohol >= 8 & whitewine_clean$Alcohol <= 15, ]
+
+# Calculate the histogram data for both red and white wine (without NAs and outliers)
+hist_red <- hist(redwine_clean$Alcohol, plot = FALSE, breaks = "FD") # Freedman-Diaconis method to calculate breaks
+hist_white <- hist(whitewine_clean$Alcohol, plot = FALSE, breaks = "FD") # Freedman-Diaconis method to calculate breaks
+
+# Find the maximum frequency across both histograms
+max_y <- max(max(hist_red$counts), max(hist_white$counts))
+
+# Set a common binwidth for both histograms
+binwidth_value <- 0.5
+
+# Histogram for red wine alcohol content (after cleaning data)
+ggplot(redwine_clean, aes(x = Alcohol)) +
+  geom_histogram(binwidth = binwidth_value, fill = "red", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of Alcohol Content for Red Wine", x = "Alcohol Content", y = "Frequency")
+
+# Histogram for white wine alcohol content (after cleaning data)
+ggplot(whitewine_clean, aes(x = Alcohol)) +
+  geom_histogram(binwidth = binwidth_value, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Histogram of Alcohol Content for White Wine", x = "Alcohol Content", y = "Frequency")
+```
+
+From the summary statistics calculated, there are more observations for white wine than red wine, which is clear by the axis in the histograms above. According to the histogram of the red wine, most red wines in the dataset has a alcohol content of around 9% to 10%. The data is right skewed. The white wine also shows that the most frequent alochol content is between 9%-10%, but there is less variability in the data. The histogram shows a constant downwards regression--as the the alochol content increases, the amount of white wine in the dataset that has higher alochol content decreases. This holds true for the red wine as well.
+
+## Boxplots
+```{r}
+# Add a column to identify wine type
+redwine_clean$Type <- "Red"
+whitewine_clean$Type <- "White"
+
+# Combine the datasets
+wine_combined <- rbind(redwine_clean, whitewine_clean)
+
+# Boxplot of Alcohol Content by Wine Type
+ggplot(wine_combined, aes(x = Type, y = Alcohol, fill = Type)) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("Red" = "red", "White" = "blue")) +
+  theme_minimal() +
+  labs(title = "Boxplot of Alcohol Content by Wine Type", x = "Wine Type", y = "Alcohol Content") +
+  theme(legend.position = "none")
+```
+
+While comparing the red wine and white wine alcohol contents, it is clear that the average alocohol content for both is very similar. The white wine shows a slightly higher mean alcohol content than red wine. The red wine boxplot indicates that there are few outliers in the dataset, meaning that some of the red wines have very high alcohol content. There is a wider range of alcohol content in white wine than there is in red wine. 
+
+
+## Scatterplots
+```{r}
+# Make Quality a factor for clearer x-axis grouping
+redwine_clean$Quality <- as.factor(redwine_clean$Quality)
+whitewine_clean$Quality <- as.factor(whitewine_clean$Quality)
+
+# Red Wine: Jitter plot for Alcohol vs. Quality
+ggplot(redwine_clean, aes(x = Quality, y = Alcohol)) +
+  geom_jitter(width = 0.2, alpha = 0.5, color = "red") +
+  geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "red") +
+  theme_minimal() +
+  labs(title = "Red Wine: Alcohol Content by Quality", x = "Quality Score", y = "Alcohol Content")
+
+# White Wine: Jitter plot for Alcohol vs. Quality
+ggplot(whitewine_clean, aes(x = Quality, y = Alcohol)) +
+  geom_jitter(width = 0.2, alpha = 0.5, color = "blue") +
+  geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "blue") +
+  theme_minimal() +
+  labs(title = "White Wine: Alcohol Content by Quality", x = "Quality Score", y = "Alcohol Content")
+
+
+```
+
+Based on the scatterplots overlaid with boxplots for alcohol content by quality score, we can observe clear patterns in how alcohol levels relate to wine quality for both red and white wines. In both plots, there is a general positive association between alcohol content and quality score—higher-quality wines tend to have slightly higher alcohol levels on average. This trend is more pronounced in white wines, where the spread of alcohol content increases steadily with quality, and the median alcohol level is noticeably higher in quality scores of 7 and above. In red wines, the relationship is also evident but more subtle, with some overlap in alcohol levels across quality scores. The inclusion of jittered points adds granularity, revealing that lower-quality wines (scores 3–5) cluster more tightly around lower alcohol content. These visualizations suggest that alcohol content may be a contributing factor in perceived wine quality, especially for white wines, and could warrant further statistical testing to assess the strength and significance of this relationship.
+
+```{r}
+# Scatterplot for Red Wine: pH vs Quality
+ggplot(redwine_clean, aes(x = Quality, y = pH)) +
+  geom_jitter(width = 0.2, alpha = 0.5, color = "red") +
+  geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "red") +
+  theme_minimal() +
+  labs(title = "Red Wine: Acidity Level (pH) by Quality", x = "Quality Score", y = "pH (Acidity Level)")
+
+# Scatterplot for White Wine: pH vs Quality
+ggplot(whitewine_clean, aes(x = Quality, y = pH)) +
+  geom_jitter(width = 0.2, alpha = 0.5, color = "blue") +
+  geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "blue") +
+  theme_minimal() +
+  labs(title = "White Wine: Acidity Level (pH) by Quality", x = "Quality Score", y = "pH (Acidity Level)")
+```
+
+The scatterplots of acidity level (pH) by quality for both red and white wines reveal only modest differences in acidity across varying quality scores. For red wine, the pH values generally cluster around 3.2 to 3.4, regardless of quality, suggesting that acidity does not vary drastically with wine quality. However, there is a slight tendency for higher quality red wines (scores of 7 and 8) to exhibit slightly lower pH values, indicating marginally higher acidity. For white wine, the pattern is similar: pH values mostly fall between 3.0 and 3.2 across all quality levels. While the white wine appears to have slightly higher acidity on average (lower pH), the distribution remains relatively consistent across quality scores. Overall, the visualizations suggest that while acidity is an important component of wine, it may not be a primary driver of quality ratings in either red or white wine based on this dataset.
+
+```{r}
+# Make sure Quality is a factor for plotting
+redwine$Quality <- as.factor(redwine$Quality)
+
+ggplot(redwine, aes(x = Quality, y = `Residual Sugar`)) +
+  geom_jitter(width = 0.2, alpha = 0.5, color = "red") +
+  geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "red") +
+  theme_minimal() +
+  labs(title = "Red Wine: Residual Sugar by Quality",
+       x = "Quality Score",
+       y = "Residual Sugar (g/dm³)")
+# Make sure Quality is a factor
+whitewine$Quality <- as.factor(whitewine$Quality)
+
+ggplot(whitewine, aes(x = Quality, y = `Residual Sugar`)) +
+  geom_jitter(width = 0.2, alpha = 0.5, color = "blue") +
+  geom_boxplot(outlier.shape = NA, alpha = 0.2, fill = "blue") +
+  theme_minimal() +
+  labs(title = "White Wine: Residual Sugar by Quality",
+       x = "Quality Score",
+       y = "Residual Sugar (g/dm³)")
+```
+In red wine, residual sugar levels appear relatively consistent across quality scores, with medians and interquartile ranges remaining narrow and similar. There is little variability, and most values cluster closely around the lower end of the residual sugar scale, suggesting that residual sugar is not a strong differentiator of quality in red wines. In contrast, white wine shows greater variability in residual sugar, particularly in lower quality categories. While the median values remain relatively low, the spread of the data increases, and several outliers with very high sugar content appear—especially among wines rated with lower quality scores. This suggests that for white wines, higher residual sugar may sometimes be associated with lower perceived quality, although the relationship is not strictly linear. Overall, the visualizations indicate that residual sugar plays a more dynamic role in white wines than in red wines when it comes to perceived quality.
+
+## Correlation Tests 
+```{r, include = FALSE}
+# Convert 'Quality' to numeric explicitly if it is not numeric
+redwine$Quality <- as.numeric(as.character(redwine$Quality))
+whitewine$Quality <- as.numeric(as.character(whitewine$Quality))
+
+# Check again the structure to ensure 'Quality' is numeric
+str(redwine$Quality)
+str(whitewine$Quality)
+
+# Check for NA values in both Alcohol and Quality columns
+sum(is.na(redwine$Alcohol))
+sum(is.na(redwine$Quality))
+sum(is.na(whitewine$Alcohol))
+sum(is.na(whitewine$Quality))
+
+# Remove rows with NA in either column
+redwine_clean <- redwine[!is.na(redwine$Alcohol) & !is.na(redwine$Quality), ]
+whitewine_clean <- whitewine[!is.na(whitewine$Alcohol) & !is.na(whitewine$Quality), ]
+```
+
+```{r}
+# Perform the correlation test again after cleaning the data
+cor_test_red <- cor.test(redwine_clean$Alcohol, redwine_clean$Quality)
+cor_test_white <- cor.test(whitewine_clean$Alcohol, whitewine_clean$Quality)
+
+# Print the results of the correlation tests
+print(cor_test_red)
+print(cor_test_white)
+
+```
+The correlation between Alcohol and Quality for red wine is 0.4762. This indicates a moderate positive linear relationship between alcohol content and quality rating. As the alcohol content increases, the quality rating tends to increase as well. The correlation between Alcohol and Quality for white wine is 0.4356, indicating a moderate positive linear relationship between alcohol content and quality, similar to red wine (although red wine correlation is slightly stronger). The p-values for both tests are very small, confirming that the observed correlations are unlikely to be due to random chance. In both cases, alcohol content appears to be positively associated with the quality of the wine, meaning that higher alcohol content generally correlates with higher quality ratings. The strength of the correlation is moderate for both red and white wines, meaning that while alcohol content does influence quality, it is not the only factor. Other factors such as acidity, residual sugar, and possibly fermentation process may also contribute significantly to wine quality. The very low p-values (less than 0.05) indicate that these correlations are statistically significant, meaning it is highly unlikely that these correlations are due to random chance.
+
+```{r}
+# Correlation test between pH and Quality for red wine
+cor_test_ph_red <- cor.test(redwine$pH, redwine$Quality)
+print(cor_test_ph_red)
+
+# Correlation test between pH and Quality for white wine
+cor_test_ph_white <- cor.test(whitewine$pH, whitewine$Quality)
+print(cor_test_ph_white)
+```
+
+The Pearson correlation tests between pH and wine quality reveal weak but statistically significant relationships for both red and white wines. For red wine, the correlation coefficient is approximately -0.058, indicating a very slight negative relationship between pH levels (acidity) and quality. This suggests that as red wine becomes slightly more acidic (lower pH), its quality rating may slightly increase, although the effect is minimal. The p-value of 0.021 supports the rejection of the null hypothesis that there is no correlation. In contrast, the white wine results show a weak positive correlation, with a coefficient of approximately 0.099. This implies that higher pH values (less acidity) are modestly associated with higher quality scores in white wine. The very small p-value (3.08e-12) indicates that this correlation is statistically significant. Although the correlation is statistically significant, the magnitude of the correlation is weak, suggesting a very slight positive relationship between pH and wine quality. As pH increases, quality tends to slightly improve, but the effect is small.
+
+
+```{r}
+# Remove rows with NA in either column for both datasets
+redwine_clean <- redwine[!is.na(redwine$`Residual Sugar`) & !is.na(redwine$Quality), ]
+whitewine_clean <- whitewine[!is.na(whitewine$`Residual Sugar`) & !is.na(whitewine$Quality), ]
+
+# Perform the correlation test again after cleaning the data
+cor_test_red <- cor.test(redwine_clean$`Residual Sugar`, redwine_clean$Quality)
+print(cor_test_red)
+
+cor_test_white <- cor.test(whitewine_clean$`Residual Sugar`, whitewine_clean$Quality)
+print(cor_test_white)
+```
+
+The Pearson correlation coefficient between residual sugar and wine quality for red wine is 0.0137, which is very close to 0. This suggests there is virtually no linear relationship between residual sugar and the quality of red wine. The p-value is 0.5832, which is much greater than 0.05. This means that the correlation is not statistically significant. In other words, there is no strong evidence to suggest that the amount of residual sugar in red wine has an impact on its quality. The Pearson correlation coefficient for residual sugar and wine quality in white wine is -0.0976, indicating a very weak negative correlation. This suggests that as the residual sugar increases in white wine, the quality tends to decrease very slightly, but the relationship is weak. The correlation is negative, indicating that higher residual sugar might be associated with lower quality, but the strength of this relationship is minimal. The p-value is 7.724e-12, which is very small and much less than 0.05. This means the negative correlation is statistically significant, although weak. There is strong evidence that some degree of negative correlation exists between residual sugar and the quality of white wine.
+
+
+```{r}
+## Hypothesis Test
+# T-test to compare alcohol content between red and white wine
+t_test_alcohol <- t.test(redwine$Alcohol, whitewine$Alcohol)
+print(t_test_alcohol)
+```
+
+This is a Welch Two-Sample t-test. This version of the t-test is used when the two samples (red wine and white wine alcohol contents) have unequal variances or unequal sample sizes, which is more robust than the standard t-test under these conditions. Null Hypothesis (H₀): The mean alcohol content of red wine is equal to the mean alcohol content of white wine. Alternative Hypothesis (H₁): The mean alcohol content of red wine is not equal to the mean alcohol content of white wine. The results indicate that there is a statistically significant difference in the alcohol content between red and white wines. Specifically, white wines have a slightly higher average alcohol content than red wines. The difference is significant, as indicated by the p-value of 0.004278, which is less than the usual significance level of 0.05.
+
+## Assumption Tests
+```{r}
+# Shapiro-Wilk normality test for red wine alcohol
+shapiro_red <- shapiro.test(redwine$Alcohol)
+print(shapiro_red)
+
+# Shapiro-Wilk normality test for white wine alcohol
+shapiro_white <- shapiro.test(whitewine$Alcohol)
+print(shapiro_white)
+```
+
+```{r}
+# Levene's test for homogeneity of variances between red and white wine alcohol content
+levene_test <- leveneTest(Alcohol ~ factor(c(rep(1, nrow(redwine)), rep(2, nrow(whitewine)))), data = rbind(redwine, whitewine))
+print(levene_test)
+```
+
+For both red wine and white wine alcohol content, the Shapiro-Wilk test for normality shows highly significant results (p-value < 2.2e-16), indicating that both red and white wine alcohol content are not normally distributed. The Shapiro-Wilk test assesses whether the data follows a normal distribution, and the very small p-value suggests strong evidence against normality. The Levene's test for homogeneity of variance, which tests whether the variances of alcohol content in red and white wines are equal, yields a significant result (p-value < 2.2e-16). This means that the assumption of equal variances between the two groups (red wine and white wine alcohol content) is violated, and the variances are significantly different. Given the significant results from both tests, the data does not meet the assumptions of normality and homogeneity of variance. This is why the Welch t-test was used, as it does not require these assumptions to be met and is more robust when dealing with unequal variances or non-normal distributions. Despite the violations of these assumptions, the Welch t-test still provides reliable results in this case.
+
+```{r}
+# Shapiro-Wilk normality test for Residual Sugar
+shapiro_red_sugar <- shapiro.test(redwine_clean$`Residual Sugar`)
+shapiro_white_sugar <- shapiro.test(whitewine_clean$`Residual Sugar`)
+```
+
+```{r, include = FALSE}
+# Shapiro-Wilk normality test for pH in red wine
+shapiro_red_ph <- shapiro.test(redwine_clean$pH)
+print(shapiro_red_ph)
+
+# Shapiro-Wilk normality test for pH in white wine
+shapiro_white_ph <- shapiro.test(whitewine_clean$pH)
+print(shapiro_white_ph)
+
+# Convert Quality to a factor for the assumption tests
+redwine_clean$Quality <- as.factor(redwine_clean$Quality)
+whitewine_clean$Quality <- as.factor(whitewine_clean$Quality)
+
+# Levene's test for homogeneity of variances between pH and Quality in red wine
+levene_red_ph_quality <- car::leveneTest(pH ~ Quality, data = redwine_clean)
+print(levene_red_ph_quality)
+
+# Levene's test for homogeneity of variances between pH and Quality in white wine
+levene_white_ph_quality <- car::leveneTest(pH ~ Quality, data = whitewine_clean)
+print(levene_white_ph_quality)
+
+# Levene's test for homogeneity of variances between Residual Sugar and Quality in red wine
+levene_red_sugar_quality <- car::leveneTest(`Residual Sugar` ~ Quality, data = redwine_clean)
+print(levene_red_sugar_quality)
+
+# Levene's test for homogeneity of variances between Residual Sugar and Quality in white wine
+levene_white_sugar_quality <- car::leveneTest(`Residual Sugar` ~ Quality, data = whitewine_clean)
+print(levene_white_sugar_quality)
+```
+
+```{r, include = FALSE}
+# Combine all assumption test results (pH and Residual Sugar)
+assumption_results <- data.frame(
+  Test = c("Shapiro-Wilk", "Shapiro-Wilk", "Shapiro-Wilk", "Shapiro-Wilk",
+           "Levene’s Test", "Levene’s Test", "Levene’s Test", "Levene’s Test"),
+  Variable = c("pH", "pH", "Residual Sugar", "Residual Sugar",
+               "pH", "pH", "Residual Sugar", "Residual Sugar"),
+  Wine_Type = c("Red", "White", "Red", "White",
+                "Red", "White", "Red", "White"),
+  Statistic = c(shapiro_red_ph$statistic, shapiro_white_ph$statistic,
+                shapiro_red_sugar$statistic, shapiro_white_sugar$statistic,
+                levene_red_ph_quality$`F value`[1], levene_white_ph_quality$`F value`[1],
+                levene_red_sugar_quality$`F value`[1], levene_white_sugar_quality$`F value`[1]),
+  P_Value = c(shapiro_red_ph$p.value, shapiro_white_ph$p.value,
+              shapiro_red_sugar$p.value, shapiro_white_sugar$p.value,
+              levene_red_ph_quality$`Pr(>F)`[1], levene_white_ph_quality$`Pr(>F)`[1],
+              levene_red_sugar_quality$`Pr(>F)`[1], levene_white_sugar_quality$`Pr(>F)`[1])
+)
+```
+
+
+```{r, include = FALSE}
+# Shapiro-Wilk normality test for Residual Sugar in red wine
+shapiro_red_sugar <- shapiro.test(redwine_clean$`Residual Sugar`)
+print(shapiro_red_sugar)
+
+# Shapiro-Wilk normality test for Residual Sugar in white wine
+shapiro_white_sugar <- shapiro.test(whitewine_clean$`Residual Sugar`)
+print(shapiro_white_sugar)
+
+# Levene's test for homogeneity of variances between Residual Sugar and Quality in red wine
+levene_red_sugar_quality <- car::leveneTest(`Residual Sugar` ~ Quality, data = redwine_clean)
+print(levene_red_sugar_quality)
+
+# Levene's test for homogeneity of variances between Residual Sugar and Quality in white wine
+levene_white_sugar_quality <- car::leveneTest(`Residual Sugar` ~ Quality, data = whitewine_clean)
+print(levene_white_sugar_quality)
+```
+
+
+```{r}
+kable(assumption_results, digits = 5, caption = "Combined Assumption Test Results for pH and Residual Sugar by Wine Type")
+```
+
+For the Shapiro-Wilk Normality test, the p-value is significantly less than 0.05, indicating that the distribution of pH for red wine does not follow a normal distribution. The null hypothesis of normality is rejected. Similarly, the p-value for white wine is extremely small, leading to the rejection of the null hypothesis of normality. The pH distribution for white wine also does not follow a normal distribution. Shapiro-Wilk normality test shows that both red wine and white wine residual sugar values do not follow a normal distribution.
+
+For Levene's Test, the p-value is much greater than 0.05, indicating that there is no significant difference in variance across the different quality groups for red wine pH. Therefore, the assumption of homogeneity of variances holds for red wine. For white wine, the p-value is extremely small, meaning that the assumption of homogeneity of variances is violated for white wine pH across different quality groups. This suggests that the variability in pH values is significantly different between the quality groups for white wine. Levene's test indicates that the variance in residual sugar is homogeneous across different quality groups for red wine, meaning the variability in residual sugar is similar across quality categories. In white wine, the test shows that the assumption of homogeneity of variances is violated for white wine residual sugar. This means the variability in residual sugar is not consistent across quality groups.
+
+Homogeneity is met for red wine for Levene's Test for pH and Residual Sugar, but not met in any other category. 
+
+```{r, include = FALSE}
+# Convert Quality to numeric if it was converted to a factor earlier
+redwine_clean$Quality <- as.numeric(as.character(redwine_clean$Quality))
+whitewine_clean$Quality <- as.numeric(as.character(whitewine_clean$Quality))
+
+# Spearman correlation between pH and Quality
+spearman_red_ph <- cor.test(redwine_clean$pH, redwine_clean$Quality, method = "spearman")
+spearman_white_ph <- cor.test(whitewine_clean$pH, whitewine_clean$Quality, method = "spearman")
+
+# Spearman correlation between Residual Sugar and Quality
+spearman_red_sugar <- cor.test(redwine_clean$`Residual Sugar`, redwine_clean$Quality, method = "spearman")
+spearman_white_sugar <- cor.test(whitewine_clean$`Residual Sugar`, whitewine_clean$Quality, method = "spearman")
+
+# Print results
+spearman_red_ph
+spearman_white_ph
+spearman_red_sugar
+spearman_white_sugar
+```
+
+```{r}
+# Create a dataframe with the Spearman correlation results
+spearman_results <- data.frame(
+  Wine_Type = c("Red", "White", "Red", "White"),
+  Variable = c("pH", "pH", "Residual Sugar", "Residual Sugar"),
+  Rho = c(-0.0437, 0.1094, 0.0320, -0.0821),
+  P_Value = c(0.08085, 1.656e-14, 0.2002, 8.822e-09),
+  Significance = c("Not Significant", "Significant", "Not Significant", "Significant")
+)
+kable(spearman_results, caption = "Spearman's Rank Correlation Results: Wine Quality vs. pH and Residual Sugar")
+```
+
+Since the distributions are not normal using Pearson correlation and the assumptions are not met, a non-parametric test must be used. 
+
+Red wine: 
+
+pH vs Quality (p-value: 0.08085): There is a very weak negative correlation between pH and wine quality for red wine, but it is not statistically significant at the 0.05 level. This means we don't have enough evidence to suggest a meaningful monotonic relationship between pH and quality in red wines.
+
+Residual Sugar vs Quality (p-value: 0.2002): There is a very weak positive correlation between residual sugar and quality for red wine, and it is also not statistically significant. Again, there's no strong evidence of a consistent upward or downward trend between these two variables.
+
+White Wine: 
+
+pH vs Quality (p-value: 1.656e-14): There is a weak but statistically significant positive correlation between pH and wine quality in white wines. Although the effect size is small, the relationship is strong enough to be considered meaningful due to the very low p-value.
+
+Residual Sugar vs Quality (p-value: 8.822e-09): There is a weak but statistically significant negative correlation, suggesting that as residual sugar increases, white wine quality tends to slightly decrease. The relationship is small but not likely due to random chance.
