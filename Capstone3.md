@@ -3,7 +3,7 @@ README
 
 # Data Understanding
 
-According to Buckley Fine Wines, there are four indicators of wine
+According to JJ Buckley Fine Wines, there are four indicators of wine
 quality: complexity, balance, typicity, and intensity and finish.
 
 Complexity: Higher quality wines are more complex in their flavor
@@ -29,6 +29,9 @@ wine. Flavors that disappear immediately can indicate that your wine is
 of moderate quality at best. The better the wine, the longer the flavor
 finish will last on your palate. Examples of a lingering taste/finish
 are indicated by alcohol content, which is tested for in the analysis.
+
+Data source:
+<https://www.jjbuckley.com/wine-knowledge/blog/the-4-factors-and-4-indicators-of-wine-quality/1009?srsltid=AfmBOoqSbpGwTLbqIFzrsPKPRth4ogICEdqOqLiY0C2fSBvxhPvW2cSo>
 
 ## Loading All Necessary Packages
 
@@ -131,14 +134,11 @@ each variable, and the data type.
 ## Summary Statistics for Red and White Wine
 
 ``` r
-# Remove any NA or NaN values in the Alcohol column for both datasets
-redwine_clean <- redwine[!is.na(redwine$Alcohol), ]
-whitewine_clean <- whitewine[!is.na(whitewine$Alcohol), ]
-# Function to summarize data with key statistics
 get_summary_stats <- function(data) {
   data %>%
+    select(where(is.numeric), -Quality) %>%  # Exclude 'Quality' from numeric selection
     summarise(across(
-      where(is.numeric),
+      everything(),
       list(
         Count = ~sum(!is.na(.)),
         Mean = ~mean(., na.rm = TRUE),
@@ -155,8 +155,9 @@ get_summary_stats <- function(data) {
                  values_to = "Value") %>%
     pivot_wider(names_from = Statistic, values_from = Value)
 }
+
 # Red Wine Summary Table
-summary_redwine <- get_summary_stats(redwine_clean)
+summary_redwine <- get_summary_stats(redwine)
 
 kable(summary_redwine, caption = "Table 3: Detailed Summary Statistics for Red Wine") %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
@@ -445,35 +446,12 @@ Alcohol
 14.90000
 </td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Quality
-</td>
-<td style="text-align:right;">
-1599
-</td>
-<td style="text-align:right;">
-5.6360225
-</td>
-<td style="text-align:right;">
-6.00000
-</td>
-<td style="text-align:right;">
-0.8075694
-</td>
-<td style="text-align:right;">
-3.00000
-</td>
-<td style="text-align:right;">
-8.00000
-</td>
-</tr>
 </tbody>
 </table>
 
 ``` r
 # White Wine Summary Table
-summary_whitewine <- get_summary_stats(whitewine_clean)
+summary_whitewine <- get_summary_stats(whitewine)
 
 kable(summary_whitewine, caption = "Table 4: Detailed Summary Statistics for White Wine") %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
@@ -762,29 +740,6 @@ Alcohol
 14.20000
 </td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Quality
-</td>
-<td style="text-align:right;">
-4898
-</td>
-<td style="text-align:right;">
-5.8779094
-</td>
-<td style="text-align:right;">
-6.00000
-</td>
-<td style="text-align:right;">
-0.8856386
-</td>
-<td style="text-align:right;">
-3.00000
-</td>
-<td style="text-align:right;">
-9.00000
-</td>
-</tr>
 </tbody>
 </table>
 
@@ -983,13 +938,13 @@ comes to perceived quality.
 
 ``` r
 # Print the table using kable for a clean output
-kable(cor_results, format = "html", caption = "Correlation Test Results for Red and White Wine", align = "lcccccc") %>%
+kable(cor_results, format = "html", caption = "Pearson Correlation Test Results for Red and White Wine", align = "lcccccc") %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
 <table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
 <caption>
-Correlation Test Results for Red and White Wine
+Pearson Correlation Test Results for Red and White Wine
 </caption>
 <thead>
 <tr>
