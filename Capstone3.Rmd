@@ -11,8 +11,7 @@ According to JJ Buckley Fine Wines, there are four indicators of wine quality: c
 
 Complexity: Higher quality wines are more complex in their flavor profile. They often have numerous layers that release flavors over time. 
 
-Balance: Wines that have good balance will be of higher quality than ones where one component stands out above the rest.
-The five components – acidity, tannins, sugar/sweetness, alcohol and fruit – need to be balanced.Higher quality wines don’t necessarily need moderation in each component – indeed, some red wines have higher acidity while others have a higher alcohol content. The dataset contains pH and Residual sugar variables, which contribute to the balance of the overall wine taste and impacts the quality.
+Balance: Wines that have good balance will be of higher quality than ones where one component stands out above the rest. The five components – acidity, tannins, sugar/sweetness, alcohol and fruit – need to be balanced.Higher quality wines don’t necessarily need moderation in each component – indeed, some red wines have higher acidity while others have a higher alcohol content. The dataset contains pH and Residual sugar variables, which contribute to the balance of the overall wine taste and impacts the quality.
 
 Typicity: This is how much the wine looks and tastes the way it should. For example, red Burgundy should have a certain appearance and taste, and it’s this combination that wine connoisseurs look for with each new vintage. This is not really tested in the analysis.
 
